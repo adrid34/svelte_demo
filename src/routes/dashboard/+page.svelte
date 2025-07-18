@@ -5,12 +5,15 @@
 	import ActivityHeatmap from '$lib/components/ActivityHeatmap.svelte';
 	import TopRepos from '$lib/components/TopRepos.svelte';
 	import DashboardHeader from '$lib/components/DashboardHeader.svelte';
+	import { fetchGithubProfile } from '$lib/api/github';
+	import type { GithubProfile } from '$lib/types/github';
+	import { profile } from '$lib/stores/profile';
 
 	let username = '';
 	let input = '';
 	const loading = writable(false);
 	const error = writable('');
-	const profile = writable<any>(null);
+	// const profile = writable<GithubProfile | null>(null); // removed, now imported
 
 	let activityWeeks: any[] = [];
 	$: if ($profile && $profile.contributionsCollection) {
@@ -31,10 +34,8 @@
 		profile.set(null);
 		loading.set(true);
 		try {
-			const res = await fetch(`/api/github/${input}`);
-			if (!res.ok) throw new Error(await res.text());
-			const data = await res.json();
-			profile.set(data.user);
+			const user = await fetchGithubProfile(input);
+			profile.set(user);
 			username = input;
 			await tick();
 		} catch (e: any) {

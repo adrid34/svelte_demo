@@ -1,6 +1,25 @@
-# OpenSourceHub
+# 🚀 OpenSourceHub
 
 A modern, full-stack SvelteKit 5 app for exploring and analyzing open-source GitHub developers. Features AI-powered profile breakdowns, dynamic dashboards, and fast edge-deployed serverless functions—all in a single monorepo, ready for Vercel.
+
+<p align="center">
+  <img src="https://img.shields.io/badge/SvelteKit-5-orange?logo=svelte" />
+  <img src="https://img.shields.io/badge/TypeScript-4.9-blue?logo=typescript" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3.0-38bdf8?logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/Drizzle%20ORM-PostgreSQL-4169e1?logo=postgresql" />
+  <img src="https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel" />
+</p>
+
+---
+
+## 📚 Table of Contents
+- [Tech Stack](#-tech-stack)
+- [Features](#-features)
+- [Getting Started](#-getting-started)
+- [Architecture](#-architecture)
+- [Deploying to Vercel](#-deploying-to-vercel)
+- [Customization & Improvements](#-customization--improvements)
+- [License](#-license)
 
 ---
 
@@ -14,13 +33,13 @@ A modern, full-stack SvelteKit 5 app for exploring and analyzing open-source Git
 ---
 
 ## ⚙️ Features
-- **GitHub Profile Analyzer:** Input a GitHub username to fetch language stats, repo activity, and top contributions using GitHub’s GraphQL API.
-- **Live Dev Dashboard:** Interactive graphs showing commit frequency, language breakdowns, and repo metrics.
-- **Backend Logic:**
+- 🔍 **GitHub Profile Analyzer:** Input a GitHub username to fetch language stats, repo activity, and top contributions using GitHub’s GraphQL API.
+- 📊 **Live Dev Dashboard:** Interactive graphs showing commit frequency, language breakdowns, and repo metrics.
+- 🛡️ **Backend Logic:**
   - API rate limiting
   - Data caching (Postgres)
   - Server-side validation
-- **Full-Stack in One Codebase:** Unified SvelteKit project—no separate frontend/backend repos.
+- 🧩 **Full-Stack in One Codebase:** Unified SvelteKit project—no separate frontend/backend repos.
 
 ---
 
@@ -39,7 +58,7 @@ npm install
 
 ### 3. Set Up Environment Variables
 Create a `.env` file in the project root:
-```
+```env
 DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
 GITHUB_TOKEN=ghp_xxx...   # (GitHub personal access token)
 ```
@@ -56,6 +75,39 @@ npx drizzle-kit push
 npm run dev
 ```
 Visit [http://localhost:5173/dashboard](http://localhost:5173/dashboard) to use the dashboard.
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD;
+  A[Routes & Pages] -->|UI| B[Components]
+  B -->|State| C[Stores]
+  B -->|API| D[API Abstraction]
+  D -->|Types| E[Types]
+  D -->|Helpers| F[Utils]
+  D -->|DB| G[(Database)]
+  B -->|Styles| H[Styles]
+```
+
+**Folder Structure:**
+
+```
+src/
+  lib/
+    components/   # Reusable UI components
+    api/          # API abstraction layer
+    stores/       # Svelte stores (state management)
+    utils/        # Utility functions/helpers
+    types/        # TypeScript types/interfaces
+    styles/       # Shared/global styles
+  routes/         # SvelteKit routes (pages, endpoints)
+```
+
+- **Separation of concerns:** UI, state, API, and types are modular.
+- **Reusable logic:** All business logic and helpers are in `lib/`.
+- **Type safety:** All API and component data is typed.
 
 ---
 
