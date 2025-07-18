@@ -1,5 +1,6 @@
 <script lang="ts">
-	export let profile: any;
+  import type { GithubProfile } from '$lib/types/github';
+  export let profile: GithubProfile;
 </script>
 
 <div class="flex-1">

@@ -1,8 +1,10 @@
 <script lang="ts">
-	export let weeks: any[] = [];
-	export let username: string;
-
 	import { onMount } from 'svelte';
+	import { fetchGithubHeatmap } from '$lib/api/github';
+	import { getGithubGreen, shadeColor } from '$lib/utils/colors';
+	import type { GithubHeatmapWeek } from '$lib/types/github';
+	export let weeks: GithubHeatmapWeek[] = [];
+	export let username: string;
 
 	let days: any[] = [];
 	let months: string[] = [];
@@ -18,9 +20,7 @@
 		loading = true;
 		error = '';
 		try {
-			const res = await fetch(`/api/github/${username}/heatmap?year=${year}`);
-			if (!res.ok) throw new Error(await res.text());
-			const data = await res.json();
+			const data = await fetchGithubHeatmap(username, year);
 			weeks = data.weeks;
 			maxCount = 1;
 			for (const w of weeks)
@@ -37,38 +37,6 @@
 	onMount(() => {
 		if (username) fetchHeatmap();
 	});
-
-	// GitHub green color scale
-	const githubGreens = [
-		'#ebedf0', // 0
-		'#9be9a8', // 1-9
-		'#40c463', // 10-19
-		'#30a14e', // 20-29
-		'#216e39' // 30+
-	];
-	function getGithubGreen(count: number) {
-		if (count === 0) return githubGreens[0];
-		if (count < 10) return githubGreens[1];
-		if (count < 20) return githubGreens[2];
-		if (count < 30) return githubGreens[3];
-		return githubGreens[4];
-	}
-
-	// Helper to shade a hex color
-	function shadeColor(color: string, percent: number) {
-		let R = parseInt(color.substring(1, 3), 16);
-		let G = parseInt(color.substring(3, 5), 16);
-		let B = parseInt(color.substring(5, 7), 16);
-		R = Math.min(255, Math.max(0, R + percent));
-		G = Math.min(255, Math.max(0, G + percent));
-		B = Math.min(255, Math.max(0, B + percent));
-		return (
-			'#' +
-			R.toString(16).padStart(2, '0') +
-			G.toString(16).padStart(2, '0') +
-			B.toString(16).padStart(2, '0')
-		);
-	}
 
 	// Isometric board parameters
 	const cell = 2; // smaller base tile size

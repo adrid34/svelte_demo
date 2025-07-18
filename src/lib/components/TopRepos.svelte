@@ -1,5 +1,6 @@
 <script lang="ts">
-  export let repos: any[] = [];
+  import type { GithubRepo } from '$lib/types/github';
+  export let repos: GithubRepo[] = [];
 </script>
 
 <div class="bg-white rounded-2xl shadow p-8 mb-10 border border-gray-200">
