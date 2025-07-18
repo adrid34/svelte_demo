@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { tick } from 'svelte';
   import { writable } from 'svelte/store';
   import Chart from 'chart.js/auto';
 
@@ -24,7 +24,7 @@
       const data = await res.json();
       profile.set(data.user);
       username = input;
-      await tick(); // Wait for DOM to update
+      await tick();
       drawCharts(data.user);
     } catch (e: any) {
       error.set(e.message || 'Error fetching profile');
@@ -80,38 +80,95 @@
   }
 </script>
 
-<div class="max-w-xl mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4">GitHub Profile Dashboard</h1>
-  <form on:submit|preventDefault={fetchProfile} class="flex gap-2 mb-4">
-    <input class="border rounded px-2 py-1 flex-1" bind:value={input} placeholder="Enter GitHub username" />
-    <button class="bg-blue-500 text-white px-4 py-1 rounded" type="submit" disabled={$loading}>Analyze</button>
+<div class="max-w-3xl mx-auto p-4">
+  <h1 class="text-3xl font-extrabold mb-8 text-center tracking-tight bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">GitHub Profile Dashboard</h1>
+  <form on:submit|preventDefault={fetchProfile} class="flex gap-2 mb-8 justify-center">
+    <input class="border rounded-lg px-4 py-2 flex-1 max-w-xs shadow focus:ring-2 focus:ring-blue-400 transition" bind:value={input} placeholder="Enter GitHub username" />
+    <button class="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-2 rounded-lg shadow font-semibold transition" type="submit" disabled={$loading}>Analyze</button>
   </form>
   {#if $error}
-    <div class="text-red-500 mb-2">{$error}</div>
+    <div class="text-red-500 mb-4 text-center font-semibold">{$error}</div>
   {/if}
   {#if $loading}
-    <div>Loading...</div>
+    <div class="text-center animate-pulse text-blue-600 font-semibold">Loading...</div>
   {/if}
   {#if $profile}
-    <div class="bg-white rounded shadow p-4 mb-4">
-      <div class="flex items-center gap-4 mb-2">
-        <img src="{$profile.avatarUrl}" alt="avatar" class="w-16 h-16 rounded-full" />
-        <div>
-          <div class="font-bold text-lg">{$profile.name} ({$profile.login})</div>
-          <div class="text-gray-600">{$profile.bio}</div>
-          <a href="{$profile.url}" class="text-blue-500" target="_blank">View on GitHub</a>
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-10 flex flex-col md:flex-row gap-8 items-center border border-blue-100">
+      <img src="{$profile.avatarUrl}" alt="avatar" class="w-32 h-32 rounded-full border-4 border-blue-300 shadow-lg" />
+      <div class="flex-1">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="text-2xl font-extrabold">{$profile.name}</span>
+          <span class="text-gray-500">@{$profile.login}</span>
+          <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">Joined {new Date($profile.createdAt).toLocaleDateString()}</span>
+        </div>
+        <div class="mb-2 text-gray-700 italic">{$profile.bio}</div>
+        <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-3 items-center">
+          {#if $profile.company}
+            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14"/><path d="M16 21v-4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4"/></svg>{$profile.company}</span>
+          {/if}
+          {#if $profile.location}
+            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21c-4.418 0-8-4.03-8-9a8 8 0 1 1 16 0c0 4.97-3.582 9-8 9z"/><circle cx="12" cy="12" r="3"/></svg>{$profile.location}</span>
+          {/if}
+          {#if $profile.email}
+            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>{$profile.email}</span>
+          {/if}
+          {#if $profile.websiteUrl}
+            <a href="{$profile.websiteUrl}" class="flex items-center gap-1 text-blue-500 hover:underline" target="_blank"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20"/></svg>Website</a>
+          {/if}
+          {#if $profile.twitterUsername}
+            <a href={`https://twitter.com/${$profile.twitterUsername}`} class="flex items-center gap-1 text-blue-400 hover:underline" target="_blank"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53A4.48 4.48 0 0 0 22.4.36a9.09 9.09 0 0 1-2.88 1.1A4.52 4.52 0 0 0 16.11 0c-2.5 0-4.52 2.01-4.52 4.5 0 .35.04.7.11 1.03C7.69 5.4 4.07 3.7 1.64 1.15c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.95 3.65A4.48 4.48 0 0 1 .96 6v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.82-.08.56 1.74 2.18 3 4.1 3.04A9.06 9.06 0 0 1 0 19.54a12.8 12.8 0 0 0 6.95 2.04c8.36 0 12.94-6.92 12.94-12.93 0-.2 0-.39-.01-.58A9.22 9.22 0 0 0 23 3z"/></svg>@{$profile.twitterUsername}</a>
+          {/if}
+        </div>
+        <div class="flex gap-6 items-center mb-2">
+          <span class="font-semibold text-blue-600 flex items-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><circle cx="17" cy="17" r="4"/></svg>{$profile.followers.totalCount} <span class="font-normal text-gray-500">Followers</span></span>
+          <span class="font-semibold text-blue-600 flex items-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>{$profile.following.totalCount} <span class="font-normal text-gray-500">Following</span></span>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center mt-2">
+          {#each $profile.organizations.nodes as org}
+            <a href={org.url} target="_blank" class="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-100 to-purple-100 rounded hover:from-blue-200 hover:to-purple-200 transition shadow-sm">
+              <img src={org.avatarUrl} alt={org.name} class="w-6 h-6 rounded-full border border-blue-200" />
+              <span class="text-xs font-semibold text-blue-700">{org.name}</span>
+            </a>
+          {/each}
         </div>
       </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div class="bg-white rounded-2xl shadow p-6 border border-blue-100">
+        <h2 class="font-semibold mb-3 text-blue-700">Top Repositories (Stars)</h2>
+        <canvas bind:this={repoChart}></canvas>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-6 border border-blue-100">
+        <h2 class="font-semibold mb-3 text-blue-700">Language Breakdown</h2>
+        <canvas bind:this={langChart}></canvas>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-8 mb-10 border border-blue-100">
+      <h2 class="font-semibold mb-4 text-blue-700">Top Repositories</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h2 class="font-semibold mb-2">Top Repositories (Stars)</h2>
-          <canvas bind:this={repoChart}></canvas>
-        </div>
-        <div>
-          <h2 class="font-semibold mb-2">Language Breakdown</h2>
-          <canvas bind:this={langChart}></canvas>
-        </div>
+        {#each $profile.repositories.nodes as repo}
+          <a href={repo.url} target="_blank" class="block bg-gradient-to-r from-gray-50 to-blue-50 hover:from-blue-100 hover:to-purple-100 rounded-xl p-5 shadow transition border border-gray-100">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-bold text-blue-700 text-lg">{repo.name}</span>
+              <span class="ml-auto text-xs text-gray-400">⭐ {repo.stargazerCount} | 🍴 {repo.forkCount}</span>
+            </div>
+            <div class="text-gray-700 text-sm mb-1 italic">{repo.description}</div>
+            <div class="flex flex-wrap gap-2 mt-2">
+              {#each repo.languages.nodes as lang}
+                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-semibold">{lang.name}</span>
+              {/each}
+            </div>
+          </a>
+        {/each}
       </div>
+    </div>
+    <div class="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow p-8 mb-8 text-center border border-blue-100">
+      <h2 class="font-semibold mb-2 text-blue-700">Fun Fact / AI Summary</h2>
+      <div class="text-gray-600 italic">(Coming soon: AI-powered insights about this developer!)</div>
+    </div>
+    <div class="bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl shadow p-8 mb-8 text-center border border-blue-100">
+      <h2 class="font-semibold mb-2 text-blue-700">GitHub Score</h2>
+      <div class="text-2xl font-bold text-blue-600">(Coming soon)</div>
     </div>
   {/if}
 </div> 

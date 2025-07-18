@@ -51,11 +51,28 @@ export async function GET({ params, getClientAddress }: RequestEvent) {
           avatarUrl
           bio
           url
+          email
+          company
+          location
+          websiteUrl
+          twitterUsername
+          followers { totalCount }
+          following { totalCount }
+          createdAt
+          organizations(first: 10) {
+            nodes {
+              name
+              avatarUrl
+              url
+            }
+          }
           repositories(first: 10, orderBy: {field: STARGAZERS, direction: DESC}) {
             nodes {
               name
               stargazerCount
               forkCount
+              description
+              url
               languages(first: 5) {
                 nodes { name }
               }
@@ -83,6 +100,7 @@ export async function GET({ params, getClientAddress }: RequestEvent) {
     }
     return json(data);
   } catch (e) {
+    console.error(e); // Log the real error for debugging
     throw error(404, 'GitHub user not found or API error');
   }
 } 
