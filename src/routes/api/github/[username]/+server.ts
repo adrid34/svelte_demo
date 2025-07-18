@@ -10,11 +10,15 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX = 10; // 10 requests per window per IP
 const rateLimitMap = new Map<string, { count: number; reset: number }>();
 
-export async function GET({ params, getClientAddress }: RequestEvent) {
+export async function GET({ params, getClientAddress, url }: RequestEvent) {
   const username = params.username;
   if (!username || typeof username !== 'string') {
     throw error(400, 'Invalid username');
   }
+
+  // Get year from query string, default to current year
+  let year = Number(url.searchParams.get('year')) || new Date().getFullYear();
+  if (year < 2008 || year > 2100) year = new Date().getFullYear();
 
   // Rate limiting by IP
   const ip = getClientAddress();
@@ -43,8 +47,10 @@ export async function GET({ params, getClientAddress }: RequestEvent) {
   const token = env.GITHUB_TOKEN;
   if (!token) throw error(500, 'GitHub token not set');
   try {
+    const from = `${year}-01-01T00:00:00Z`;
+    const to = `${year}-12-31T23:59:59Z`;
     const data = await graphql(
-      `query($login: String!) {
+      `query($login: String!, $from: DateTime!, $to: DateTime!) {
         user(login: $login) {
           login
           name
@@ -66,6 +72,18 @@ export async function GET({ params, getClientAddress }: RequestEvent) {
               url
             }
           }
+          contributionsCollection(from: $from, to: $to) {
+            contributionCalendar {
+              totalContributions
+              weeks {
+                contributionDays {
+                  color
+                  contributionCount
+                  date
+                }
+              }
+            }
+          }
           repositories(first: 10, orderBy: {field: STARGAZERS, direction: DESC}) {
             nodes {
               name
@@ -82,6 +100,8 @@ export async function GET({ params, getClientAddress }: RequestEvent) {
       }`,
       {
         login: username,
+        from,
+        to,
         headers: { authorization: `token ${token}` }
       }
     );
